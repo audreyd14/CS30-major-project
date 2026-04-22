@@ -3,16 +3,13 @@ I am creating a zombie apocolyse game. The goal of this game will be for the pla
 
 ## Needs to Have
 - main player that moves with arrows
-- keyboard controls to attack and collect resources
-- randomly generated city map (zooms in on player)
+- randomly generated city map 
+- keyboard controls to attack zombie
 - zombies class
-- resources class
-- weapons class
 - plants that grow over time
 - timer 
 - health status
-- attacking on zombie/ from zombie
-- collecting items(resources for food/health regeneration, weapons for attacks)
+- attacking on zombie/ from zombie 
 - increasing amount of zombies over time
 - start screen 
 - instructions pop up
@@ -20,6 +17,11 @@ I am creating a zombie apocolyse game. The goal of this game will be for the pla
 
 
 ## Nice to Have
+- collecting items(resources for food/health regeneration, weapons for attacks)
+- keyboard controls to attack and collect resources
+- resources class
+- weapons class
+- map that zooms in on player
 - levels that increase in difficulty of grid generation(more zombies/harder to get out of city)
 - custom designed graphics(drawn by me)
 - resource(to collect) that tells you amount of zombies
