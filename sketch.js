@@ -32,6 +32,7 @@ function setup() {
 function draw() {
   background(220);
   displayGrid();
+  toggleGrid();
 }
 
 function displayGrid(){
@@ -53,21 +54,31 @@ function displayGrid(){
   }
 }
 
-function mousePressed(){
-  let x = Math.floor(mouseX/CELL_SIZE);
-  let y = Math.floor(mouseY/CELL_SIZE);
+// function mousePressed(){
+//   let x = Math.floor(mouseX/CELL_SIZE);
+//   let y = Math.floor(mouseY/CELL_SIZE);
 
-  toggleGrid(x, y);
-}
+//   toggleGrid(x, y);
+// }
 
-function toggleGrid(x, y){
-  if (x>=0 && x< cols && y >=0 && y< rows){
-    if (grid[y][x] === BUILDING){
-      grid[y][x] = PATH;
-    }
-
-    else if (grid[y][x] === PATH){
-      grid[y][x] = BUILDING;
+function toggleGrid(){
+  for(let y = 0; y< rows; y++){
+    for(let x = 0; x< cols; x++){
+      if(grid[y][x] === PATH){
+        let nextPath = random([1, 2, 3, 4]);
+        if(nextPath === 1){
+          grid[y][x+1] = PATH;
+        }
+        else if(nextPath === 2){
+          grid[y][x-1] = PATH;
+        }
+        else if(nextPath === 3){
+          grid[y+1][x] = PATH;
+        }
+        else if(nextPath === 4){
+          grid[y-1][x] = PATH;
+        }
+      }
     }
   }
 }
@@ -81,7 +92,6 @@ function generateRandomGrid(cols, rows){
     for(let x = 0; x < cols; x++){
       if(random(100) < 50){
         newGrid[y].push(PATH);
-        newGrid[y][x-1] === PATH;
       }
       else {
         newGrid[y].push(BUILDING);
@@ -90,6 +100,7 @@ function generateRandomGrid(cols, rows){
   }
   return newGrid;
 }
+
 
 function keyPressed(){
   if (key === "r"){
