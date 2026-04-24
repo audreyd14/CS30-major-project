@@ -25,6 +25,7 @@ function setup() {
   rows = Math.floor(height/CELL_SIZE);
   cols = Math.floor(width/CELL_SIZE);
   grid = generateRandomGrid(cols, rows);
+  // toggleGrid();
   // add player to grid
   grid[thePlayer.y][thePlayer.x] = PLAYER;
 }
@@ -32,7 +33,6 @@ function setup() {
 function draw() {
   background(220);
   displayGrid();
-  toggleGrid();
 }
 
 function displayGrid(){
@@ -61,27 +61,34 @@ function displayGrid(){
 //   toggleGrid(x, y);
 // }
 
-function toggleGrid(){
-  for(let y = 0; y< rows; y++){
-    for(let x = 0; x< cols; x++){
-      if(grid[y][x] === PATH){
-        let nextPath = random([1, 2, 3, 4]);
-        if(nextPath === 1){
-          grid[y][x+1] = PATH;
-        }
-        else if(nextPath === 2){
-          grid[y][x-1] = PATH;
-        }
-        else if(nextPath === 3){
-          grid[y+1][x] = PATH;
-        }
-        else if(nextPath === 4){
-          grid[y-1][x] = PATH;
-        }
-      }
-    }
-  }
+function inBounds(x, y){
+  return x >= 0 && x < cols && y >= 0 && y < rows;
 }
+
+// function toggleGrid(){
+//   for(let y = 0; y< rows; y++){
+//     for(let x = 0; x< cols; x++){
+//       if(grid[y][x] === PATH){
+//         let nextPath = random([1, 2, 3, 4]);
+//         if(nextPath === 1 && inBounds(x+1, y)){
+//           grid[y][x+1] = PATH;
+//         }
+//         else if(nextPath === 2 && inBounds(x-1, y)){
+//           grid[y][x-1] = PATH;
+//         }
+//         else if(nextPath === 3 && inBounds(x, y+1)){
+//           grid[y+1][x] = PATH;
+//         }
+//         else if(nextPath === 4 && inBounds(x, y-1)){
+//           grid[y-1][x] = PATH;
+//         }
+//         else{
+//           grid[y][x] = BUILDING;
+//         }
+//       }
+//     }
+//   }
+// }
 
 //LOOK AT THIS
 function generateRandomGrid(cols, rows){
@@ -92,8 +99,23 @@ function generateRandomGrid(cols, rows){
     for(let x = 0; x < cols; x++){
       if(random(100) < 50){
         newGrid[y].push(PATH);
+
+        let nextPath = random([1, 2, 3, 4]);
+        if(nextPath === 1 && inBounds(x+1, y)){
+          newGrid[y][x+1] = PATH;
+        }
+        else if(nextPath === 2 && inBounds(x-1, y)){
+          newGrid[y][x-1] = PATH;
+        }
+        // else if(nextPath === 3 && inBounds(x, y+1)){
+        //   newGrid[y+1][x] = PATH;
+        // }
+        // else if(nextPath === 4 && inBounds(x, y-1)){
+        //   newGrid[y-1][x] = PATH;
+        // }
       }
-      else {
+      
+      else if (newGrid[y] !== PATH){
         newGrid[y].push(BUILDING);
       }
     }
@@ -148,7 +170,7 @@ function generateEmptyGrid(cols, rows){
   for(let y = 0; y < rows; y ++){
     newGrid.push([]);
     for(let x = 0; x < cols; x++){
-      newGrid[y].push (PATH);
+      newGrid[y].push(PATH);
     }
   }
   return newGrid;
