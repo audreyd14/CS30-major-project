@@ -17,6 +17,7 @@ let thePlayer = {
   x:0,
   y:0,
 };
+let exit;
 
 
 
@@ -25,8 +26,17 @@ function setup() {
   rows = Math.floor(height/CELL_SIZE);
   cols = Math.floor(width/CELL_SIZE);
   grid = generateRandomGrid(cols, rows);
-  // toggleGrid();
+  exit = { 
+    x: cols-1, 
+    y: rows-1,
+  };
+
+  grid[exit.y][exit.x] = PATH;
   // add player to grid
+  pathToExit();
+  pathFromPlayer(500);
+  addLoops();
+  toggleGrid();
   grid[thePlayer.y][thePlayer.x] = PLAYER;
 }
 
@@ -54,68 +64,123 @@ function displayGrid(){
   }
 }
 
-// function mousePressed(){
-//   let x = Math.floor(mouseX/CELL_SIZE);
-//   let y = Math.floor(mouseY/CELL_SIZE);
-
-//   toggleGrid(x, y);
-// }
 
 function inBounds(x, y){
   return x >= 0 && x < cols && y >= 0 && y < rows;
 }
 
-// function toggleGrid(){
-//   for(let y = 0; y< rows; y++){
-//     for(let x = 0; x< cols; x++){
-//       if(grid[y][x] === PATH){
-//         let nextPath = random([1, 2, 3, 4]);
-//         if(nextPath === 1 && inBounds(x+1, y)){
-//           grid[y][x+1] = PATH;
-//         }
-//         else if(nextPath === 2 && inBounds(x-1, y)){
-//           grid[y][x-1] = PATH;
-//         }
-//         else if(nextPath === 3 && inBounds(x, y+1)){
-//           grid[y+1][x] = PATH;
-//         }
-//         else if(nextPath === 4 && inBounds(x, y-1)){
-//           grid[y-1][x] = PATH;
-//         }
-//         else{
-//           grid[y][x] = BUILDING;
-//         }
-//       }
-//     }
-//   }
-// }
+function toggleGrid(){
+  let pathGrid = [];
 
-//LOOK AT THIS
+  for(let y = 0; y< rows; y++){
+    pathGrid.push([]);
+    for(let x = 0; x< cols; x++){
+      pathGrid[y].push(grid[y][x]);
+    }
+  }
+
+  for(let y = 0; y<rows; y++){
+    for(let x = 0; x< cols; x++){
+      if (grid[y][x] === PATH){
+        let directions = [
+          [1, 0],
+          [-1, 0],
+          [0, 1],
+          [0, -1]
+        ];
+
+        for (let dir of directions){
+          let newx = x + dir[0];
+          let newy = y + dir[1];
+      
+          if (inBounds(newx, newy) && random(100) < 22){
+            pathGrid[newy][newx] = PATH;
+          }
+        }
+      }
+    }
+  }
+  grid = pathGrid;
+}
+
+function pathFromPlayer(steps){
+  for (let i = 0; i < steps; i++){
+    let x = Math.floor(random(cols));
+    let y = Math.floor(random(rows));
+
+    // only grow from existing paths
+    if (grid[y][x] === PATH){
+      let directions = [[1,0],[-1,0],[0,1],[0,-1]];
+      let d = random(directions);
+
+      let newx = x + d[0];
+      let newy = y + d[1];
+
+      if (inBounds(newx, newy)){
+        grid[newy][newx] = PATH;
+      }
+    }
+  }
+}
+
+function pathToExit(){
+  let x = 0;
+  let y = 0;
+
+  while(x !== exit.x || y !== exit.y){
+    grid[y][x] = PATH;
+
+    if (random() < 0.7 && x < cols-1){
+      x++;
+    } 
+    else if (y < rows-1){
+      y++;
+    }
+  }
+}
+
+function addLoops(){
+  let chance = 15;
+  for (let y = 1; y < rows-1; y++){
+    for (let x = 1; x < cols-1; x++){
+
+      if (grid[y][x] === BUILDING){
+
+        let pathsAround = 0;
+
+        if (grid[y+1][x] === PATH) {
+          pathsAround++;
+        } 
+        if (grid[y-1][x] === PATH) {
+          pathsAround++;
+        } 
+        if (grid[y][x+1] === PATH) {
+          pathsAround++;
+        } 
+        if (grid[y][x-1] === PATH) {
+          pathsAround++;
+        } 
+
+        // if a building is between paths, sometimes remove it
+        if (pathsAround >= 2 && random(100) < chance){
+          grid[y][x] = PATH;
+        }
+      }
+    }
+  }
+}
+
 function generateRandomGrid(cols, rows){
   let newGrid = [];
 
   for(let y = 0; y < rows; y ++){
     newGrid.push([]);
     for(let x = 0; x < cols; x++){
-      if(random(100) < 50){
+      if(random(100) < 25 ){
         newGrid[y].push(PATH);
-
-        let nextPath = random([1, 2, 3, 4]);
-        if(nextPath === 1 && inBounds(x+1, y)){
-          newGrid[y][x+1] = PATH;
-        }
-        else if(nextPath === 2 && inBounds(x-1, y)){
-          newGrid[y][x-1] = PATH;
-        }
-        // else if(nextPath === 3 && inBounds(x, y+1)){
-        //   newGrid[y+1][x] = PATH;
-        // }
-        // else if(nextPath === 4 && inBounds(x, y-1)){
-        //   newGrid[y-1][x] = PATH;
-        // }
       }
       
-      else if (newGrid[y] !== PATH){
+      else {
         newGrid[y].push(BUILDING);
       }
     }
@@ -127,6 +192,9 @@ function generateRandomGrid(cols, rows){
 function keyPressed(){
   if (key === "r"){
     grid = generateRandomGrid(cols, rows);
+    pathFromPlayer(2000);
+    pathToExit();
+    toggleGrid();
     grid[thePlayer.y][thePlayer.x] = PLAYER;
   }
   if (key === "e"){
@@ -164,6 +232,7 @@ function movePlayer(x, y){
     grid[oldY][oldX] = PATH;
   }
 }
+
 function generateEmptyGrid(cols, rows){
   let newGrid = [];
 
