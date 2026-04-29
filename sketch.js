@@ -43,6 +43,7 @@ function setup() {
 function draw() {
   background(220);
   displayGrid();
+  restart();
 }
 
 function displayGrid(){
@@ -190,13 +191,6 @@ function generateRandomGrid(cols, rows){
 
 
 function keyPressed(){
-  if (key === "r"){
-    grid = generateRandomGrid(cols, rows);
-    pathFromPlayer(2000);
-    pathToExit();
-    toggleGrid();
-    grid[thePlayer.y][thePlayer.x] = PLAYER;
-  }
   if (key === "e"){
     grid = generateEmptyGrid(cols, rows);
     grid[thePlayer.y][thePlayer.x] = PLAYER;
@@ -243,4 +237,27 @@ function generateEmptyGrid(cols, rows){
     }
   }
   return newGrid;
+}
+
+function restart(){
+  if(thePlayer.x === exit.x && thePlayer.y === exit.y){
+    rows = Math.floor(height/CELL_SIZE);
+    cols = Math.floor(width/CELL_SIZE);
+    grid = generateRandomGrid(cols, rows);
+    exit = { 
+      x: cols-1, 
+      y: rows-1,
+    };
+
+    grid[exit.y][exit.x] = PATH;
+    // add player to grid
+    pathToExit();
+    pathFromPlayer(500);
+    addLoops();
+    toggleGrid();
+    
+    thePlayer.x = 0;
+    thePlayer.y = 0;
+    grid[thePlayer.y][thePlayer.x] = PLAYER;
+  }
 }
