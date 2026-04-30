@@ -18,8 +18,11 @@ let thePlayer = {
   y:0,
 };
 let exit;
+let pathimg;
 
-
+function preload(){
+  pathimg = loadImage("pathimg.png");
+}
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -54,8 +57,7 @@ function displayGrid(){
         rect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE);
       }
       if (grid[y][x] === PATH){
-        fill("white");
-        rect(x*CELL_SIZE, y * CELL_SIZE, CELL_SIZE);
+        image(pathimg, x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
       }
       if(grid[y][x] === PLAYER){
         fill("red");
