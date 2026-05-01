@@ -67,7 +67,7 @@ function displayGrid(){
   }
 }
 
-
+//if path generation is currently in the window
 function inBounds(x, y){
   return x >= 0 && x < cols && y >= 0 && y < rows;
 }
