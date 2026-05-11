@@ -6,10 +6,12 @@
 // - describe what you did to take this project "above and beyond"
 //TO DO:
 // make it so there is a connecting path. make start screen and win screen. make a start and exit point. make it so buildings generate semi-randomly but must generate around edges
+
+
+
 const CELL_SIZE = 20;
 const PATH = 0;
 const BUILDING = 1;
-const PLAYER = 9;
 let grid;
 let rows;
 let cols;
@@ -19,6 +21,61 @@ let thePlayer = {
 };
 let exit;
 let pathimg;
+let zombies = [];
+
+class Zombie{
+  constructor(){
+    //find a place to spawn
+    let found = false;
+
+    // try to find a valid spawn tile
+    for (let attempt = 0; attempt < 1000; attempt++) {
+    // pick random tile 
+      let x = floor(random(cols));
+      let y = floor(random(rows));
+      //if tile is path then its a valid spawn point
+      if (grid[y][x] === PATH) {
+        this.x = x;
+        this.y = y;
+        found = true;
+        break;//stop the loop because a spawn point was found
+      }
+    }
+
+    // if it cant find a spawn point it will just spawn at origin 
+    if (!found) {
+      this.x = 1;
+      this.y = 1;
+    }
+
+    this.finder = new PF.AStarFinder();
+  }
+
+  display(){
+    fill("green");
+
+    rect(this.x*CELL_SIZE, this.y*CELL_SIZE, CELL_SIZE, CELL_SIZE);
+  }
+
+  move(){
+    let pfGrid = new PF.Grid(grid);
+
+    let path = this.finder.findPath(
+      this.x,
+      this.y,
+      thePlayer.x,
+      thePlayer.y,
+      pfGrid
+    );
+
+    //move 1 step
+    if(path.length > 1){
+
+      this.x = path[1][0];
+      this.y = path[1][1];
+    }
+  }
+}
 
 function preload(){
   pathimg = loadImage("pathimg.png");
@@ -33,19 +90,29 @@ function setup() {
     x: cols-1, 
     y: rows-1,
   };
-
+  
   grid[exit.y][exit.x] = PATH;
   // add player to grid
   pathToExit();
   pathFromPlayer(500);
   addLoops();
   toggleGrid();
-  grid[thePlayer.y][thePlayer.x] = PLAYER;
+  
+  for (let i = 0; i < 5; i++) {
+    zombies.push(new Zombie());
+  }
+  
 }
 
 function draw() {
   background(220);
   displayGrid();
+
+  for (let z of zombies) {
+    z.move();
+    z.display();
+  }
+
   restart();
 }
 
@@ -59,12 +126,10 @@ function displayGrid(){
       if (grid[y][x] === PATH){
         image(pathimg, x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
       }
-      if(grid[y][x] === PLAYER){
-        fill("red");
-        rect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE);
-      }
     }
   }
+  fill("red");
+  rect(thePlayer.x * CELL_SIZE, thePlayer.y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
 }
 
 //if path generation is currently in the window
@@ -195,7 +260,7 @@ function generateRandomGrid(cols, rows){
 function keyPressed(){
   if (key === "e"){
     grid = generateEmptyGrid(cols, rows);
-    grid[thePlayer.y][thePlayer.x] = PLAYER;
+   
   }
   if(key === "s"){
     movePlayer(thePlayer.x, thePlayer.y + 1);
@@ -212,20 +277,9 @@ function keyPressed(){
 }
 
 function movePlayer(x, y){
-  if (x>= 0 && x< cols && y>=0 && y< rows && grid[y][x] === PATH){
-    //previous position
-    let oldX = thePlayer.x;
-    let oldY = thePlayer.y;
-
-    //move player to new location
+  if ( x >= 0 && x < cols && y >= 0 && y < rows && grid[y][x] === PATH){
     thePlayer.x = x;
     thePlayer.y = y;
-
-    //add player to grid
-    grid[thePlayer.y][thePlayer.x] = PLAYER;
-
-    //reset the old location to open tile
-    grid[oldY][oldX] = PATH;
   }
 }
 
@@ -260,6 +314,11 @@ function restart(){
     
     thePlayer.x = 0;
     thePlayer.y = 0;
-    grid[thePlayer.y][thePlayer.x] = PLAYER;
+   
+    zombies = [];
+
+    for (let i = 0; i < 5; i++) {
+      zombies.push(new Zombie());
+    }
   }
 }
