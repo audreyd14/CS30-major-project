@@ -34,7 +34,7 @@ class Zombie{
       let x = floor(random(cols));
       let y = floor(random(rows));
       //if tile is path then its a valid spawn point
-      if (grid[y][x] === PATH) {
+      if (grid[y][x] === PATH && !(x === thePlayer.x && y === thePlayer.y)) {
         this.x = x;
         this.y = y;
         found = true;
@@ -107,10 +107,19 @@ function setup() {
 function draw() {
   background(220);
   displayGrid();
-
+  
+  if(frameCount % 15 === 0){
+    for(let z of zombies){
+      z.move();
+    }
+  }
   for (let z of zombies) {
-    z.move();
     z.display();
+  }
+  for (let z of zombies){
+    if (z.x === thePlayer.x && z.y === thePlayer.y){
+      setup(); // restart game
+    }
   }
 
   restart();
@@ -161,7 +170,7 @@ function toggleGrid(){
           let newx = x + dir[0];
           let newy = y + dir[1];
       
-          if (inBounds(newx, newy) && random(100) < 22){
+          if (inBounds(newx, newy) && newx > 0 && newx < cols-1 && newy > 0 && newy < rows-1 && random(100) < 22){
             pathGrid[newy][newx] = PATH;
           }
         }
@@ -198,13 +207,14 @@ function pathToExit(){
   while(x !== exit.x || y !== exit.y){
     grid[y][x] = PATH;
 
-    if (random() < 0.7 && x < cols-1){
+    if (random() < 0.5 && x < cols-1){
       x++;
     } 
     else if (y < rows-1){
       y++;
     }
   }
+  grid[y][x] = PATH;
 }
 
 function addLoops(){
@@ -253,6 +263,22 @@ function generateRandomGrid(cols, rows){
       }
     }
   }
+  // top and bottom walls
+  for (let x = 0; x < cols; x++){
+    newGrid[0][x] = BUILDING;
+    newGrid[rows-1][x] = BUILDING;
+  }
+
+  // left and right walls
+  for (let y = 0; y < rows; y++){
+    
+    newGrid[y][0] = BUILDING;
+    newGrid[y][cols-1] = BUILDING;
+  }
+
+  // reopen start and exit
+  newGrid[0][0] = PATH;
+  newGrid[rows-1][cols-1] = PATH;
   return newGrid;
 }
 
