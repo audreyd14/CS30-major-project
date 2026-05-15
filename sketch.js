@@ -15,10 +15,7 @@ const BUILDING = 1;
 let grid;
 let rows;
 let cols;
-let thePlayer = {
-  x:0,
-  y:0,
-};
+let thePlayer;
 let exit;
 let start;
 let pathimg;
@@ -69,6 +66,12 @@ class Zombie{
     if (thePlayer.x < 0 || thePlayer.x >= cols || thePlayer.y < 0 || thePlayer.y >= rows){
       return;
     }
+
+    for (let y = 0; y < grid.length; y++) {
+      if (grid[y].length !== cols) {
+        console.log("BAD ROW:", y, grid[y].length);
+      }
+    }
     let pfGrid = new PF.Grid(grid);
 
     let path = this.finder.findPath(
@@ -96,7 +99,6 @@ function preload(){
 function setup() {
   createCanvas(windowWidth, windowHeight);
   restart();
-  
 }
 
 function draw() {
@@ -129,7 +131,7 @@ function displayGrid(){
     for (let x = 0; x < cols; x++){
       if (grid[y][x] === BUILDING){
         fill("black");
-        rect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE);
+        rect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
       }
       if (grid[y][x] === PATH){
         // image(pathimg, x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
@@ -152,9 +154,9 @@ function toggleGrid(){
   let pathGrid = [];
 
   for(let y = 0; y< rows; y++){
-    pathGrid.push([]);
+    pathGrid[y] = [];
     for(let x = 0; x< cols; x++){
-      pathGrid[y].push(grid[y][x]);
+      pathGrid[y][x] = grid[y][x];
     }
   }
 
@@ -172,7 +174,7 @@ function toggleGrid(){
           let newx = x + dir[0];
           let newy = y + dir[1];
       
-          if (inBounds(newx, newy) && newx > 0 && newx < cols-1 && newy > 0 && newy < rows-1 && random(100) < 22){
+          if (inBounds(newx, newy) && random(100) < 22){
             pathGrid[newy][newx] = PATH;
           }
         }
@@ -200,6 +202,8 @@ function pathFromPlayer(steps){
       }
     }
   }
+  grid[exit.y][exit.x] = PATH;
+  grid[start.y][start.x] = PATH;
 }
 
 function pathToExit(){
@@ -217,29 +221,34 @@ function pathToExit(){
     }
   }
   grid[y][x] = PATH;
+  grid[exit.y][exit.x] = PATH;
+  grid[start.y][start.x] = PATH;
 }
 
 function addLoops(){
   let chance = 15;
-  for (let y = 1; y < exit.y; y++){
-    for (let x = 1; x < exit.x; x++){
+  for (let y = 1; y < rows-1; y++){
+    for (let x = 1; x < cols-1; x++){
 
       if (grid[y][x] === BUILDING){
 
         let pathsAround = 0;
 
-        if (grid[y+1][x] === PATH) {
+        if (inBounds(x, y+1) && grid[y+1][x] === PATH){
           pathsAround++;
-        } 
-        if (grid[y-1][x] === PATH) {
+        }
+
+        if (inBounds(x, y-1) && grid[y-1][x] === PATH){
           pathsAround++;
-        } 
-        if (grid[y][x+1] === PATH) {
+        }
+
+        if (inBounds(x+1, y) && grid[y][x+1] === PATH){
           pathsAround++;
-        } 
-        if (grid[y][x-1] === PATH) {
+        }
+
+        if (inBounds(x-1, y) && grid[y][x-1] === PATH){
           pathsAround++;
-        } 
+        }
 
         // if a building is between paths, sometimes remove it
         if (pathsAround >= 2 && random(100) < chance){
@@ -285,6 +294,7 @@ function generateRandomGrid(cols, rows){
 
 
 function keyPressed(){
+  console.log("key pressed");
   if (key === "e"){
     grid = generateEmptyGrid(cols, rows);
    
@@ -304,7 +314,7 @@ function keyPressed(){
 }
 
 function movePlayer(x, y){
-  if ( x >= start.x && x <= exit.x && y >= start.y && y <= exit.y && grid[y][x] === PATH){
+  if (inBounds(x, y) && grid[y][x] === PATH){
     thePlayer.x = x;
     thePlayer.y = y;
   }
@@ -334,19 +344,34 @@ function restart(){
     x: 1,
     y: 1
   };
+  thePlayer = {
+    x: start.x,
+    y: start.y
+  };
+
   grid = generateRandomGrid(cols, rows);
-  thePlayer.x = start.x;
-  thePlayer.y = start.y;
     
   // add player to grid
   pathToExit();
   pathFromPlayer(500);
   addLoops();
   toggleGrid();
-  grid[exit.y][exit.x] = PATH;
-  grid[start.y][start.x] = PATH;
     
   for (let i = 0; i < 5; i++) {
     zombies.push(new Zombie());
+  }
+
+  grid[exit.y][exit.x] = PATH;
+  grid[start.y][start.x] = PATH;
+
+  for (let y = 0; y < rows; y++){
+
+    if (!grid[y]){
+      console.log("Missing row:", y);
+    }
+
+    else if (grid[y].length !== cols){
+      console.log("Bad row length:", y);
+    }
   }
 }
