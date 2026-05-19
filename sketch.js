@@ -124,6 +124,7 @@ function draw() {
     restart();
     return;
   }
+  console.log(thePlayer.x, thePlayer.y);
 }
 
 function displayGrid(){
@@ -141,8 +142,7 @@ function displayGrid(){
       }
     }
   }
-  fill("red");
-  rect(thePlayer.x * CELL_SIZE, thePlayer.y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+  drawPlayer(thePlayer.x, thePlayer.y);
 }
 
 //if path generation is currently in the window
@@ -313,10 +313,27 @@ function keyPressed(){
   }
 }
 
+function drawPlayer(x,y){
+  fill("red");
+  rect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+}
+
 function movePlayer(x, y){
+  console.log("trying move to:", x, y);
+  console.log("tile value:", grid[y][x]);
+
   if (inBounds(x, y) && grid[y][x] === PATH){
+    let oldX = thePlayer.x;
+    let oldY = thePlayer.y;
+    
+
     thePlayer.x = x;
     thePlayer.y = y;
+    
+    drawPlayer(thePlayer.x, thePlayer.y);
+    displayGrid();
+    console.log(oldX, oldY);
+    console.log(thePlayer.x, thePlayer.y);
   }
 }
 
