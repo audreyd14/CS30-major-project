@@ -5,7 +5,7 @@
 // Extra for Experts:
 // - describe what you did to take this project "above and beyond"
 //TO DO:
-// make it so there is a connecting path. make start screen and win screen. make a start and exit point. make it so buildings generate semi-randomly but must generate around edges
+// make it so zombies dont get stuck as easy add start and end screen
 
 
 
@@ -20,6 +20,7 @@ let exit;
 let start;
 let pathimg;
 let zombies = [];
+let paused = false;
 
 class Zombie{
   constructor(){
@@ -32,7 +33,7 @@ class Zombie{
       let x = floor(random(cols));
       let y = floor(random(rows));
       //if tile is path then its a valid spawn point
-      if (grid[y][x] === PATH && !(x === thePlayer.x && y === thePlayer.y)) {
+      if (grid[y][x] === PATH && dist(x, y, thePlayer.x, thePlayer.y) > 10) {
         this.x = x;
         this.y = y;
         found = true;
@@ -42,11 +43,13 @@ class Zombie{
 
     // if it cant find a spawn point it will just spawn at origin 
     if (!found) {
-      this.x = 1;
-      this.y = 1;
+      console.log("zombies failed to spawn");
     }
 
-    this.finder = new PF.AStarFinder();
+    this.finder = new PF.AStarFinder({
+      allowDiagonal: true,
+      dontCrossCorners: false 
+    });
   }
 
   display(){
@@ -67,12 +70,13 @@ class Zombie{
       return;
     }
 
-    for (let y = 0; y < grid.length; y++) {
-      if (grid[y].length !== cols) {
-        console.log("BAD ROW:", y, grid[y].length);
+    let pfGrid = new PF.Grid(cols, rows);
+
+    for (let y = 0; y < rows; y++) {
+      for (let x = 0; x < cols; x++) {
+        pfGrid.setWalkableAt(x, y, grid[y][x] === PATH);
       }
     }
-    let pfGrid = new PF.Grid(grid);
 
     let path = this.finder.findPath(
       this.x,
@@ -84,13 +88,12 @@ class Zombie{
 
     //move 1 step
     if(path.length > 1){
-
       this.x = path[1][0];
       this.y = path[1][1];
     }
-    
   }
 }
+
 
 function preload(){
   pathimg = loadImage("pathimg.png");
@@ -105,14 +108,18 @@ function draw() {
   background(220);
   displayGrid();
   
-  if(frameCount % 15 === 0){
-    for(let z of zombies){
-      z.move();
+  if (!paused){
+    if(frameCount % 30 === 0 ){
+      for(let z of zombies){
+        z.move();
+      }
     }
   }
+
   for (let z of zombies) {
     z.display();
   }
+
   for (let z of zombies){
     if (z.x === thePlayer.x && z.y === thePlayer.y){
       restart(); // restart game
@@ -295,19 +302,32 @@ function generateRandomGrid(cols, rows){
 
 function keyPressed(){
   console.log("key pressed");
+  if(key === "p"){
+    paused = !paused;
+    return;
+  }
+
+  if(paused){
+    return;
+  }
+
   if (key === "e"){
     grid = generateEmptyGrid(cols, rows);
    
   }
+
   if(key === "s"){
     movePlayer(thePlayer.x, thePlayer.y + 1);
   }
+
   if(key === "w"){
     movePlayer(thePlayer.x, thePlayer.y - 1);
   }
+
   if(key === "a"){
     movePlayer(thePlayer.x - 1, thePlayer.y);
   }
+
   if(key === "d"){
     movePlayer(thePlayer.x + 1, thePlayer.y);
   }
@@ -319,10 +339,13 @@ function drawPlayer(x,y){
 }
 
 function movePlayer(x, y){
+  if (!inBounds(x, y)) {
+    return;
+  }
   console.log("trying move to:", x, y);
-  console.log("tile value:", grid[y][x]);
 
-  if (inBounds(x, y) && grid[y][x] === PATH){
+  console.log("tile value:", grid[y][x]);
+  if (grid[y][x] === PATH){
     let oldX = thePlayer.x;
     let oldY = thePlayer.y;
     
