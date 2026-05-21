@@ -92,6 +92,10 @@ class Zombie{
       this.y = path[1][1];
     }
   }
+
+  attacked(){
+    Zombie.remove //figure this out
+  }
 }
 
 
@@ -393,7 +397,7 @@ function restart(){
     
   // add player to grid
   pathToExit();
-  pathFromPlayer(500);
+  pathFromPlayer(1000);
   addLoops();
   toggleGrid();
     
@@ -412,6 +416,20 @@ function restart(){
 
     else if (grid[y].length !== cols){
       console.log("Bad row length:", y);
+    }
+  }
+}
+
+function mouseClicked(){
+  for(let z of zombies){
+    if(dist(z.x, z.y, thePlayer.x, thePlayer.y) < CELL_SIZE*5 &&
+    mouseX <= z.x + CELL_SIZE &&
+    mouseX >= z.x - CELL_SIZE &&
+    mouseY <= z.y + CELL_SIZE &&
+    mouseY >= z.y - CELL_SIZE){
+
+      console.log("gotcha zombie");
+      zombies.splice(z, 1);
     }
   }
 }
