@@ -5,7 +5,7 @@
 // Extra for Experts:
 // - describe what you did to take this project "above and beyond"
 //TO DO:
-// make it so zombies dont get stuck as easy add start and end screen
+// add start/ restart screen, timer, health bar
 
 
 
@@ -21,6 +21,7 @@ let start;
 let pathimg;
 let zombies = [];
 let paused = false;
+let spawnRate = 180; // frames
 
 class Zombie{
   constructor(){
@@ -47,8 +48,7 @@ class Zombie{
     }
 
     this.finder = new PF.AStarFinder({
-      allowDiagonal: true,
-      dontCrossCorners: false 
+      allowDiagonal: false
     });
   }
 
@@ -94,14 +94,18 @@ class Zombie{
   }
 
   attacked(){
-    Zombie.remove //figure this out
+    let index = zombies.indexOf(this);
+
+    if (index !== -1){
+      zombies.splice(index, 1);
+    }
   }
 }
 
 
-function preload(){
-  pathimg = loadImage("pathimg.png");
-}
+// function preload(){
+//   pathimg = loadImage("pathimg.png");
+// }
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -118,6 +122,13 @@ function draw() {
         z.move();
       }
     }
+  }
+
+  if(frameCount % spawnRate === 0){
+    zombies.push(new Zombie());
+  }
+  if(frameCount % 600 === 0 && spawnRate > 30){
+    spawnRate -= 10;
   }
 
   for (let z of zombies) {
@@ -401,7 +412,7 @@ function restart(){
   addLoops();
   toggleGrid();
     
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < 3; i++) {
     zombies.push(new Zombie());
   }
 
@@ -421,15 +432,20 @@ function restart(){
 }
 
 function mouseClicked(){
-  for(let z of zombies){
-    if(dist(z.x, z.y, thePlayer.x, thePlayer.y) < CELL_SIZE*5 &&
-    mouseX <= z.x + CELL_SIZE &&
-    mouseX >= z.x - CELL_SIZE &&
-    mouseY <= z.y + CELL_SIZE &&
-    mouseY >= z.y - CELL_SIZE){
+  for(let i = zombies.length - 1; i >= 0; i--){
 
-      console.log("gotcha zombie");
-      zombies.splice(z, 1);
+    let z = zombies[i];
+    let zx = z.x * CELL_SIZE;
+    let zy = z.y * CELL_SIZE;
+    if(dist(z.x, z.y, thePlayer.x, thePlayer.y) < CELL_SIZE*5 &&
+    mouseX <= zx + CELL_SIZE &&
+    mouseX >= zx &&
+    mouseY <= zy + CELL_SIZE &&
+    mouseY >= zy){
+
+      z.attacked();
+
+      break;
     }
   }
 }
