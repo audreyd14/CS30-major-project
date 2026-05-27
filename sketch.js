@@ -5,7 +5,7 @@
 // Extra for Experts:
 // - describe what you did to take this project "above and beyond"
 //TO DO:
-// add start/ restart screen, timer, health bar
+// display timer, add health bar, fix graphics
 
 
 
@@ -22,6 +22,9 @@ let pathimg;
 let zombies = [];
 let paused = false;
 let spawnRate = 180; // frames
+let screenMode = "start";
+let timerActive = false;
+let timeStart =  0;
 
 class Zombie{
   constructor(){
@@ -109,45 +112,75 @@ class Zombie{
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  restart();
 }
 
 function draw() {
-  background(220);
-  displayGrid();
+  screens();
+}
+
+function screens(){
+  if(screenMode=== "start"){
+    background(100);
+    textSize(100);
+    text(`Zombie Apocolypse`, width/2, height/2);
+  }
+
+  if(screenMode === "play"){
+    timerActive = true;
+    timerStart();
+    background(220);
+    displayGrid();
   
-  if (!paused){
-    if(frameCount % 30 === 0 ){
-      for(let z of zombies){
-        z.move();
+    if (!paused){
+      if(frameCount % 30 === 0 ){
+        for(let z of zombies){
+          z.move();
+        }
       }
     }
-  }
 
-  if(frameCount % spawnRate === 0){
-    zombies.push(new Zombie());
-  }
-  if(frameCount % 600 === 0 && spawnRate > 30){
-    spawnRate -= 10;
-  }
+    if(frameCount % spawnRate === 0){
+      zombies.push(new Zombie());
+    }
+    if(frameCount % 600 === 0 && spawnRate > 30){
+      spawnRate -= 10;
+    }
 
-  for (let z of zombies) {
-    z.display();
-  }
+    for (let z of zombies) {
+      z.display();
+    }
 
-  for (let z of zombies){
-    if (z.x === thePlayer.x && z.y === thePlayer.y){
-      restart(); // restart game
+    for (let z of zombies){
+      if (z.x === thePlayer.x && z.y === thePlayer.y){
+        screenMode = "end"; // restart game
+        return;
+      }
+    }
+
+    if(thePlayer.x === exit.x && thePlayer.y === exit.y){
+      screenMode = "end";
       return;
     }
+    console.log(thePlayer.x, thePlayer.y);
   }
 
-  if(thePlayer.x === exit.x && thePlayer.y === exit.y){
-    restart();
-    return;
+  if(screenMode === "end"){
+    timerActive = false;
+    background(100);
+    textSize(100);
+    text(`Game Over`, width/2, height/2);
   }
-  console.log(thePlayer.x, thePlayer.y);
 }
+
+function timerStart(){
+  if (!timerActive) {
+    timeStart = millis(); // Start the timer right now
+    timerActive = true;
+  }
+  let timePassed = round((millis() - timeStart)/ 1000);
+  console.log(`${timePassed} seconds have passed`);
+}
+
 
 function displayGrid(){
   for (let y = 0; y < rows; y++){
@@ -321,8 +354,14 @@ function keyPressed(){
     paused = !paused;
     return;
   }
-
+  
   if(paused){
+    return;
+  }
+  
+  if(key === "1"){
+    restart();
+    screenMode = "play";
     return;
   }
 
