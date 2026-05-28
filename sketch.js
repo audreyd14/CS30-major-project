@@ -5,7 +5,7 @@
 // Extra for Experts:
 // - describe what you did to take this project "above and beyond"
 //TO DO:
-// display timer, add health bar, fix graphics
+// add health bar, fix graphics
 
 
 
@@ -25,6 +25,8 @@ let spawnRate = 180; // frames
 let screenMode = "start";
 let timerActive = false;
 let timeStart =  0;
+let timePassed;
+let health = 3;
 
 class Zombie{
   constructor(){
@@ -126,11 +128,12 @@ function screens(){
   }
 
   if(screenMode === "play"){
-    timerActive = true;
     timerStart();
     background(220);
     displayGrid();
-  
+    displayTimer();
+    healthBar();
+    
     if (!paused){
       if(frameCount % 30 === 0 ){
         for(let z of zombies){
@@ -152,8 +155,12 @@ function screens(){
 
     for (let z of zombies){
       if (z.x === thePlayer.x && z.y === thePlayer.y){
-        screenMode = "end"; // restart game
-        return;
+        health -= 1;
+        z.attacked();
+        if(health <= 0){
+          screenMode = "end"; // restart game
+          return;
+        }
       }
     }
 
@@ -169,6 +176,7 @@ function screens(){
     background(100);
     textSize(100);
     text(`Game Over`, width/2, height/2);
+
   }
 }
 
@@ -177,8 +185,32 @@ function timerStart(){
     timeStart = millis(); // Start the timer right now
     timerActive = true;
   }
-  let timePassed = round((millis() - timeStart)/ 1000);
-  console.log(`${timePassed} seconds have passed`);
+  timePassed = round((millis() - timeStart)/ 1000);
+}
+
+function displayTimer(){
+  let timerX = width - 100;
+  let timerY = 30;
+  fill("red");
+  rect(timerX, timerY, 50, 30);
+  fill("black");
+  textSize(CELL_SIZE);
+  text(`${timePassed}`, timerX + CELL_SIZE, timerY + CELL_SIZE);
+}
+
+function healthBar(){
+  let healthX = width - 150;
+  let healthY = 30;
+  for(let i = 0; i < 3; i++){
+    if (i < health){
+      fill("yellow");
+    }
+    else{
+      fill("grey");
+    }
+    circle(healthX + i * 25, healthY, CELL_SIZE);
+  }
+  
 }
 
 
@@ -428,6 +460,10 @@ function generateEmptyGrid(cols, rows){
 
 function restart(){
   zombies = [];
+
+  health = 3;
+  timerActive = false;
+  timePassed = 0;
   rows = Math.floor(height/CELL_SIZE);
   cols = Math.floor(width/CELL_SIZE);
   exit = { 
