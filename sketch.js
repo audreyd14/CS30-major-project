@@ -21,7 +21,7 @@ let start;
 let pathimg;
 let zombies = [];
 let paused = false;
-let spawnRate = 180; // frames
+let spawnRate = 360; // frames
 let screenMode = "start";
 let timerActive = false;
 let timeStart =  0;
@@ -96,6 +96,10 @@ class Zombie{
       this.x = path[1][0];
       this.y = path[1][1];
     }
+    else{//nowhere to go despawn
+      this.attacked();
+      zombies.push(new Zombie());
+    }
   }
 
   attacked(){
@@ -123,6 +127,7 @@ function draw() {
 function screens(){
   if(screenMode=== "start"){
     background(100);
+    textAlign(CENTER);
     textSize(100);
     text(`Zombie Apocolypse`, width/2, height/2);
   }
@@ -174,9 +179,25 @@ function screens(){
   if(screenMode === "end"){
     timerActive = false;
     background(100);
+    textAlign(CENTER);
     textSize(100);
     text(`Game Over`, width/2, height/2);
 
+  }
+}
+
+function buttons(button){
+  if(button === "start"){
+    let startX = width/2;
+    let startY = height/2 + 50;
+    rectMode(CENTER);
+    fill("blue");
+    rect(startX, startY, 100, 50);
+    textAlign(CENTER);
+    fill("white");
+    text('start', startX, startY);
+
+    if(mouseX<= startX + 50 && mouseX >= startX - 50)//////////
   }
 }
 
@@ -387,43 +408,52 @@ function keyPressed(){
     return;
   }
   
+  // dont let any other buttons get pressed while paused
   if(paused){
     return;
   }
   
+  //start play 
   if(key === "1"){
     restart();
     screenMode = "play";
     return;
   }
 
+  //empty grid 
   if (key === "e"){
     grid = generateEmptyGrid(cols, rows);
    
   }
 
+  //move down
   if(key === "s"){
     movePlayer(thePlayer.x, thePlayer.y + 1);
   }
 
+  //move up
   if(key === "w"){
     movePlayer(thePlayer.x, thePlayer.y - 1);
   }
 
+  //move left
   if(key === "a"){
     movePlayer(thePlayer.x - 1, thePlayer.y);
   }
 
+  //move right
   if(key === "d"){
     movePlayer(thePlayer.x + 1, thePlayer.y);
   }
 }
 
+//draw the player as it moves
 function drawPlayer(x,y){
   fill("red");
   rect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
 }
 
+//use this to move the player using keys
 function movePlayer(x, y){
   if (!inBounds(x, y)) {
     return;
@@ -446,6 +476,7 @@ function movePlayer(x, y){
   }
 }
 
+//if i need to test
 function generateEmptyGrid(cols, rows){
   let newGrid = [];
 
@@ -458,6 +489,7 @@ function generateEmptyGrid(cols, rows){
   return newGrid;
 }
 
+//use this to start and restart the whole game
 function restart(){
   zombies = [];
 
@@ -506,6 +538,7 @@ function restart(){
   }
 }
 
+//kill zombie
 function mouseClicked(){
   for(let i = zombies.length - 1; i >= 0; i--){
 
