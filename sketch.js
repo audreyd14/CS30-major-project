@@ -27,6 +27,7 @@ let timerActive = false;
 let timeStart =  0;
 let timePassed;
 let health = 3;
+let zombiesKilled = 0;
 
 class Zombie{
   constructor(){
@@ -118,6 +119,7 @@ class Zombie{
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
+  restart();
 }
 
 function draw() {
@@ -130,6 +132,7 @@ function screens(){
     textAlign(CENTER);
     textSize(100);
     text(`Zombie Apocolypse`, width/2, height/2);
+    buttons("start");
   }
 
   if(screenMode === "play"){
@@ -163,26 +166,39 @@ function screens(){
         health -= 1;
         z.attacked();
         if(health <= 0){
-          screenMode = "end"; // restart game
+          screenMode = "endLose"; // restart game
           return;
         }
       }
     }
 
     if(thePlayer.x === exit.x && thePlayer.y === exit.y){
-      screenMode = "end";
+      screenMode = "endWin";
       return;
     }
+
     console.log(thePlayer.x, thePlayer.y);
   }
 
-  if(screenMode === "end"){
+  if(screenMode === "endLose"){
     timerActive = false;
     background(100);
     textAlign(CENTER);
     textSize(100);
-    text(`Game Over`, width/2, height/2);
+    fill("red");
+    text(`Game Over
+        You Lose`, width/2, height/2);
 
+  }
+
+  if(screenMode === "endWin"){
+    timerActive = false;
+    background(100);
+    textAlign(CENTER);
+    textSize(100);
+    fill("green");
+    text(`Game Over
+        You Win`, width/2, height/2);
   }
 }
 
@@ -196,8 +212,10 @@ function buttons(button){
     textAlign(CENTER);
     fill("white");
     text('start', startX, startY);
-
-    if(mouseX<= startX + 50 && mouseX >= startX - 50)//////////
+    if(mouseX<= startX + 50 && mouseX >= startX - 50 && mouseY <= startY + 25 && mouseY >= startY -25){
+      screenMode = "play";
+      return;
+    }
   }
 }
 
@@ -216,11 +234,11 @@ function displayTimer(){
   rect(timerX, timerY, 50, 30);
   fill("black");
   textSize(CELL_SIZE);
-  text(`${timePassed}`, timerX + CELL_SIZE, timerY + CELL_SIZE);
+  text(`${timePassed}`, timerX, timerY+ CELL_SIZE/2);
 }
 
 function healthBar(){
-  let healthX = width - 150;
+  let healthX = width - 200;
   let healthY = 30;
   for(let i = 0; i < 3; i++){
     if (i < health){
@@ -231,7 +249,14 @@ function healthBar(){
     }
     circle(healthX + i * 25, healthY, CELL_SIZE);
   }
-  
+}
+
+function displayKills(){
+  let killsX = width - 100;
+  let killsY = 60;
+  fill(green);
+  rect(killsX, killsY, 50, 30);
+  fill////////
 }
 
 
@@ -539,7 +564,7 @@ function restart(){
 }
 
 //kill zombie
-function mouseClicked(){
+function mousePressed(){
   for(let i = zombies.length - 1; i >= 0; i--){
 
     let z = zombies[i];
@@ -552,8 +577,10 @@ function mouseClicked(){
     mouseY >= zy){
 
       z.attacked();
+      zombiesKilled ++; 
 
       break;
     }
   }
 }
+
