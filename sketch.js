@@ -5,7 +5,7 @@
 // Extra for Experts:
 // - describe what you did to take this project "above and beyond"
 //TO DO:
-// add health bar, fix graphics
+// reset heath bar
 
 
 
@@ -21,6 +21,8 @@ let start;
 let pathimg;
 let zombies = [];
 let paused = false;
+let pauseStart = 0;
+let totalPausedTime = 0;
 let spawnRate = 360; // frames
 let screenMode = "start";
 let timerActive = false;
@@ -141,6 +143,7 @@ function screens(){
     displayGrid();
     displayTimer();
     healthBar();
+    displayKills();
     
     if (!paused){
       if(frameCount % 30 === 0 ){
@@ -148,6 +151,9 @@ function screens(){
           z.move();
         }
       }
+    }
+    if (paused){
+
     }
 
     if(frameCount % spawnRate === 0){
@@ -188,7 +194,7 @@ function screens(){
     fill("red");
     text(`Game Over
         You Lose`, width/2, height/2);
-
+    buttons("start");
   }
 
   if(screenMode === "endWin"){
@@ -199,19 +205,21 @@ function screens(){
     fill("green");
     text(`Game Over
         You Win`, width/2, height/2);
+    buttons("start");
   }
 }
 
 function buttons(button){
   if(button === "start"){
     let startX = width/2;
-    let startY = height/2 + 50;
+    let startY = height/2 + 100;
     rectMode(CENTER);
     fill("blue");
-    rect(startX, startY, 100, 50);
+    rect(startX, startY, 200, 100);
     textAlign(CENTER);
     fill("white");
-    text('start', startX, startY);
+    textSize(60);
+    text('start', startX, startY + 20);
     if(mouseX<= startX + 50 && mouseX >= startX - 50 && mouseY <= startY + 25 && mouseY >= startY -25){
       screenMode = "play";
       return;
@@ -224,7 +232,9 @@ function timerStart(){
     timeStart = millis(); // Start the timer right now
     timerActive = true;
   }
-  timePassed = round((millis() - timeStart)/ 1000);
+  if(!paused){
+    timePassed = round((millis() - timeStart - totalPausedTime)/ 1000);
+  }
 }
 
 function displayTimer(){
@@ -253,10 +263,12 @@ function healthBar(){
 
 function displayKills(){
   let killsX = width - 100;
-  let killsY = 60;
-  fill(green);
+  let killsY = 80;
+  fill("green");
   rect(killsX, killsY, 50, 30);
-  fill////////
+  fill("black");
+  textSize(CELL_SIZE);
+  text(`${zombiesKilled}`, killsX, killsY + 10);
 }
 
 
@@ -429,7 +441,15 @@ function generateRandomGrid(cols, rows){
 function keyPressed(){
   console.log("key pressed");
   if(key === "p"){
+
     paused = !paused;
+    if(paused === true){
+      pauseStart = millis();
+    }
+
+    else{
+      totalPausedTime += millis() - pauseStart;
+    }
     return;
   }
   
@@ -518,9 +538,12 @@ function generateEmptyGrid(cols, rows){
 function restart(){
   zombies = [];
 
-  health = 3;
   timerActive = false;
   timePassed = 0;
+  pauseStart = 0;
+  totalPausedTime = 0;
+  health = 3;
+  zombiesKilled = 0;
   rows = Math.floor(height/CELL_SIZE);
   cols = Math.floor(width/CELL_SIZE);
   exit = { 
@@ -570,15 +593,14 @@ function mousePressed(){
     let z = zombies[i];
     let zx = z.x * CELL_SIZE;
     let zy = z.y * CELL_SIZE;
-    if(dist(z.x, z.y, thePlayer.x, thePlayer.y) < CELL_SIZE*5 &&
-    mouseX <= zx + CELL_SIZE &&
-    mouseX >= zx &&
-    mouseY <= zy + CELL_SIZE &&
-    mouseY >= zy){
+    let px = thePlayer.x * CELL_SIZE;
+    let py = thePlayer.y * CELL_SIZE;
+    if(dist(zx, zy, px, py) < CELL_SIZE*2 &&
+      dist(mouseX, mouseY, zx, zy ) < CELL_SIZE*2 && dist(mouseX, mouseY, px, py) < CELL_SIZE*2){
 
       z.attacked();
       zombiesKilled ++; 
-
+      console.log("Kills:", zombiesKilled);
       break;
     }
   }
