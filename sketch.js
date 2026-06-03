@@ -19,6 +19,7 @@ let thePlayer;
 let exit;
 let start;
 let pathimg;
+let buildingimg;
 let zombies = [];
 let paused = false;
 let pauseStart = 0;
@@ -115,9 +116,10 @@ class Zombie{
 }
 
 
-// function preload(){
-//   pathimg = loadImage("pathimg.png");
-// }
+function preload(){
+  pathimg = loadImage("pathimg.png");
+  buildingimg = loadImage("buildingimg.png");
+}
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -125,6 +127,7 @@ function setup() {
 }
 
 function draw() {
+  noStroke();
   screens();
 }
 
@@ -144,7 +147,7 @@ function screens(){
     displayTimer();
     healthBar();
     displayKills();
-    
+    rectMode(CORNER);
     if (!paused){
       if(frameCount % 30 === 0 ){
         for(let z of zombies){
@@ -192,9 +195,12 @@ function screens(){
     textAlign(CENTER);
     textSize(100);
     fill("red");
-    text(`Game Over
-        You Lose`, width/2, height/2);
-    buttons("start");
+    text(`GAME OVER
+  You Lose`, width/2, height/2 - 100);
+    textSize(50);
+    text(`You lost in ${timePassed} seconds
+  You killed ${zombiesKilled} zombies`, width/2, height/2 + 100);
+    buttons("restart");
   }
 
   if(screenMode === "endWin"){
@@ -203,9 +209,12 @@ function screens(){
     textAlign(CENTER);
     textSize(100);
     fill("green");
-    text(`Game Over
-        You Win`, width/2, height/2);
-    buttons("start");
+    text(`GAME OVER
+  You Win`, width/2, height/2 - 100);
+    textSize(50);
+    text(`You won in ${timePassed} seconds
+  You killed ${zombiesKilled} zombies`, width/2, height/2 + 100);
+    buttons("restart");
   }
 }
 
@@ -221,6 +230,24 @@ function buttons(button){
     textSize(60);
     text('start', startX, startY + 20);
     if(mouseX<= startX + 50 && mouseX >= startX - 50 && mouseY <= startY + 25 && mouseY >= startY -25){
+      restart();
+      screenMode = "play";
+      return;
+    }
+  }
+
+  if(button === "restart"){
+    let restartX = width/2;
+    let restartY = height/2 + 300;
+    rectMode(CENTER);
+    fill("red");
+    rect(restartX, restartY, 200, 100);
+    textAlign(CENTER);
+    fill("white");
+    textSize(60);
+    text('restart', restartX, restartY + 20);
+    if(mouseX<= restartX + 50 && mouseX >= restartX - 50 && mouseY <= restartY + 25 && mouseY >= restartY -25){
+      restart();
       screenMode = "play";
       return;
     }
@@ -238,6 +265,7 @@ function timerStart(){
 }
 
 function displayTimer(){
+  rectMode(CENTER);
   let timerX = width - 100;
   let timerY = 30;
   fill("red");
@@ -262,6 +290,7 @@ function healthBar(){
 }
 
 function displayKills(){
+  rectMode(CENTER);
   let killsX = width - 100;
   let killsY = 80;
   fill("green");
@@ -275,15 +304,15 @@ function displayKills(){
 function displayGrid(){
   for (let y = 0; y < rows; y++){
     for (let x = 0; x < cols; x++){
+      rectMode(CORNER);
       if (grid[y][x] === BUILDING){
-        fill("black");
-        rect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+        image(buildingimg, x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
       }
       if (grid[y][x] === PATH){
-        // image(pathimg, x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+        image(pathimg, x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
 
-        fill(180);
-        rect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+        // fill(180);
+        // rect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
       }
     }
   }
