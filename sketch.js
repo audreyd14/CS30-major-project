@@ -20,6 +20,7 @@ let exit;
 let start;
 let pathimg;
 let buildingimg;
+let zombieimg;
 let zombies = [];
 let paused = false;
 let pauseStart = 0;
@@ -62,9 +63,7 @@ class Zombie{
   }
 
   display(){
-    fill("green");
-
-    rect(this.x*CELL_SIZE, this.y*CELL_SIZE, CELL_SIZE, CELL_SIZE);
+    image(zombieimg, this.x*CELL_SIZE, this.y*CELL_SIZE);
   }
 
   move(){
@@ -117,8 +116,9 @@ class Zombie{
 
 
 function preload(){
-  pathimg = loadImage("pathimg.png");
-  buildingimg = loadImage("buildingimg.png");
+  pathimg = loadImage("pathimg1.png");
+  buildingimg = loadImage("buildingimg1.png");
+  zombieimg = loadImage("zombie.png");
 }
 
 function setup() {
@@ -127,7 +127,6 @@ function setup() {
 }
 
 function draw() {
-  noStroke();
   screens();
 }
 
@@ -162,8 +161,9 @@ function screens(){
     if(frameCount % spawnRate === 0){
       zombies.push(new Zombie());
     }
+
     if(frameCount % 600 === 0 && spawnRate > 30){
-      spawnRate -= 10;
+      spawnRate -= 20;
     }
 
     for (let z of zombies) {
@@ -268,9 +268,9 @@ function displayTimer(){
   rectMode(CENTER);
   let timerX = width - 100;
   let timerY = 30;
-  fill("red");
+  fill(51, 60, 97);
   rect(timerX, timerY, 50, 30);
-  fill("black");
+  fill(187, 198, 242);
   textSize(CELL_SIZE);
   text(`${timePassed}`, timerX, timerY+ CELL_SIZE/2);
 }
@@ -280,10 +280,10 @@ function healthBar(){
   let healthY = 30;
   for(let i = 0; i < 3; i++){
     if (i < health){
-      fill("yellow");
+      fill(209, 52, 91);
     }
     else{
-      fill("grey");
+      fill(43, 0, 22);
     }
     circle(healthX + i * 25, healthY, CELL_SIZE);
   }
@@ -293,9 +293,9 @@ function displayKills(){
   rectMode(CENTER);
   let killsX = width - 100;
   let killsY = 80;
-  fill("green");
+  fill(6, 79, 34);
   rect(killsX, killsY, 50, 30);
-  fill("black");
+  fill(221, 235, 226);
   textSize(CELL_SIZE);
   text(`${zombiesKilled}`, killsX, killsY + 10);
 }
