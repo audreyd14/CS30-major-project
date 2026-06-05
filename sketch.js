@@ -5,13 +5,14 @@
 // Extra for Experts:
 // - describe what you did to take this project "above and beyond"
 //TO DO:
-// reset heath bar
+// FIX ERRORS WITH PLANTS
 
 
 
 const CELL_SIZE = 20;
 const PATH = 0;
 const BUILDING = 1;
+const PLANTS = 2;
 let grid;
 let rows;
 let cols;
@@ -119,11 +120,13 @@ function preload(){
   pathimg = loadImage("pathimg1.png");
   buildingimg = loadImage("buildingimg1.png");
   zombieimg = loadImage("zombie.png");
+  font = loadFont("pcsenior.ttf");
 }
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
   restart();
+  textFont(font);
 }
 
 function draw() {
@@ -133,12 +136,14 @@ function draw() {
 function screens(){
   if(screenMode=== "start"){
     background(100);
+    fill("white");
     textAlign(CENTER);
-    textSize(100);
+    textSize(80);
     text(`Zombie Apocolypse`, width/2, height/2);
     buttons("start");
+    displayInstructions();
   }
-
+  
   if(screenMode === "play"){
     timerStart();
     background(220);
@@ -146,7 +151,11 @@ function screens(){
     displayTimer();
     healthBar();
     displayKills();
+
+    //show end
     rectMode(CORNER);
+    fill("yellow");
+    rect(exit.x * CELL_SIZE, exit.y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
     if (!paused){
       if(frameCount % 30 === 0 ){
         for(let z of zombies){
@@ -181,6 +190,10 @@ function screens(){
       }
     }
 
+    if (frameCount % 300 === 0) {
+      growPlants();
+    }
+
     if(thePlayer.x === exit.x && thePlayer.y === exit.y){
       screenMode = "endWin";
       return;
@@ -193,13 +206,13 @@ function screens(){
     timerActive = false;
     background(100);
     textAlign(CENTER);
-    textSize(100);
+    textSize(80);
     fill("red");
     text(`GAME OVER
-  You Lose`, width/2, height/2 - 100);
-    textSize(50);
+You Lose`, width/2, height/2 - 100);
+    textSize(30);
     text(`You lost in ${timePassed} seconds
-  You killed ${zombiesKilled} zombies`, width/2, height/2 + 100);
+You killed ${zombiesKilled} zombies`, width/2, height/2 + 100);
     buttons("restart");
   }
 
@@ -207,13 +220,13 @@ function screens(){
     timerActive = false;
     background(100);
     textAlign(CENTER);
-    textSize(100);
+    textSize(80);
     fill("green");
     text(`GAME OVER
-  You Win`, width/2, height/2 - 100);
-    textSize(50);
+You Win`, width/2, height/2 - 100);
+    textSize(30);
     text(`You won in ${timePassed} seconds
-  You killed ${zombiesKilled} zombies`, width/2, height/2 + 100);
+You killed ${zombiesKilled} zombies`, width/2, height/2 + 100);
     buttons("restart");
   }
 }
@@ -227,8 +240,8 @@ function buttons(button){
     rect(startX, startY, 200, 100);
     textAlign(CENTER);
     fill("white");
-    textSize(60);
-    text('start', startX, startY + 20);
+    textSize(30);
+    text('start', startX, startY);
     if(mouseX<= startX + 50 && mouseX >= startX - 50 && mouseY <= startY + 25 && mouseY >= startY -25){
       restart();
       screenMode = "play";
@@ -238,19 +251,53 @@ function buttons(button){
 
   if(button === "restart"){
     let restartX = width/2;
-    let restartY = height/2 + 300;
+    let restartY = height/2 + 200;
     rectMode(CENTER);
     fill("red");
     rect(restartX, restartY, 200, 100);
     textAlign(CENTER);
     fill("white");
-    textSize(60);
-    text('restart', restartX, restartY + 20);
+    textSize(25);
+    text('restart', restartX, restartY);
     if(mouseX<= restartX + 50 && mouseX >= restartX - 50 && mouseY <= restartY + 25 && mouseY >= restartY -25){
       restart();
       screenMode = "play";
       return;
     }
+  }
+}
+
+function displayInstructions(){
+  let instrX = 50;
+  let instrY = 50;
+  textAlign(LEFT);
+  textSize(30);
+  text("Instructions", instrX, instrY);
+  if(mouseX<= instrX + 400 && mouseX >= instrX && mouseY <= instrY + 50 && mouseY >= instrY){
+    rectMode(CORNER);
+    fill("black");
+    rect(instrX + 10, instrY + 10, 500, 250);
+    textSize(10);
+    fill("green");
+    text(`-WASD to move Player(red square)
+
+-press P to pause game
+
+-reach the yellow square to win
+
+-walk on grey paths
+
+-look out for zombies
+
+-click on nearby zombies to kill them
+
+-3 pink circles are your health
+
+-blue rectangle is your time
+
+-green rectangle is your zombie kill count
+
+-press 1 to reset game in an emergency`, instrX + 10, instrY + 20);
   }
 }
 
@@ -602,17 +649,6 @@ function restart(){
 
   grid[exit.y][exit.x] = PATH;
   grid[start.y][start.x] = PATH;
-
-  for (let y = 0; y < rows; y++){
-
-    if (!grid[y]){
-      console.log("Missing row:", y);
-    }
-
-    else if (grid[y].length !== cols){
-      console.log("Bad row length:", y);
-    }
-  }
 }
 
 //kill zombie
@@ -635,3 +671,46 @@ function mousePressed(){
   }
 }
 
+function growPlants() {
+  for (let y = 1; y < rows - 1; y++) {
+    for (let x = 1; x < cols - 1; x++) {
+
+      if (grid[y][x] === PATH) {
+
+        let nearBuilding = false;
+
+        let directions = [
+          [1,0], [-1,0],
+          [0,1], [0,-1]
+        ];
+
+        for (let d of directions) {
+          let nx = x + d[0];
+          let ny = y + d[1];
+
+          if (grid[ny][nx] === BUILDING) {
+            nearBuilding = true;
+          }
+        }
+
+        if (nearBuilding && random(100) < 2) {
+          grid[y][x] = PLANTS;
+        }
+
+        displayPlants();
+      }
+    }
+  }
+}
+
+function displayPlants(){
+  if (grid[y][x] === PLANTS) {
+    fill("green");
+    rect(x *CELL_SIZE, y *CELL_SIZE, CELL_SIZE, CELL_SIZE);
+    // image(overgrownPathImg,
+    //       x * CELL_SIZE,
+    //       y * CELL_SIZE,
+    //       CELL_SIZE,
+    //       CELL_SIZE);
+  }
+}
