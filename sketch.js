@@ -1,11 +1,10 @@
-// Project Title
-// Your Name
+// Zombie Apocalypse
+// Audrey
 // Date
 //
 // Extra for Experts:
 // - describe what you did to take this project "above and beyond"
 //TO DO:
-// FIX ERRORS WITH PLANTS
 
 
 
@@ -19,10 +18,14 @@ let cols;
 let thePlayer;
 let exit;
 let start;
+let startimg;
+let endimg;
 let pathimg;
 let buildingimg;
 let zombieimg;
+let plantsimg;
 let zombies = [];
+let plants = [];
 let paused = false;
 let pauseStart = 0;
 let totalPausedTime = 0;
@@ -115,11 +118,28 @@ class Zombie{
   }
 }
 
+class Plant{
+  constructor(){
+    this.x = floor(random(cols));
+    this.y = floor(random(rows));
+    this.size = CELL_SIZE;
+
+  }
+
+  display(){
+    fill("green");
+    image(plantsimg, this.x * CELL_SIZE, this.y * CELL_SIZE);
+  }
+}
+
 
 function preload(){
+  startimg = loadImage("startscreen.png");
+  endimg = loadImage("endscreen.png");
   pathimg = loadImage("pathimg1.png");
   buildingimg = loadImage("buildingimg1.png");
   zombieimg = loadImage("zombie.png");
+  plantsimg = loadImage("plant.png");
   font = loadFont("pcsenior.ttf");
 }
 
@@ -135,7 +155,7 @@ function draw() {
 
 function screens(){
   if(screenMode=== "start"){
-    background(100);
+    background(startimg);
     fill("white");
     textAlign(CENTER);
     textSize(80);
@@ -190,8 +210,16 @@ function screens(){
       }
     }
 
-    if (frameCount % 300 === 0) {
-      growPlants();
+    if (frameCount % 300 === 0 && timePassed > 10){
+      plants.push(new Plant());
+      if(frameCount % 100 === 0 && timePassed > 20){
+        plants.push(new Plant());
+      }
+    }
+
+    for(let p of plants){
+      grid[p.y][p.x] = BUILDING;
+      p.display();
     }
 
     if(thePlayer.x === exit.x && thePlayer.y === exit.y){
@@ -613,6 +641,7 @@ function generateEmptyGrid(cols, rows){
 //use this to start and restart the whole game
 function restart(){
   zombies = [];
+  plants = [];
 
   timerActive = false;
   timePassed = 0;
@@ -671,46 +700,4 @@ function mousePressed(){
   }
 }
 
-function growPlants() {
-  for (let y = 1; y < rows - 1; y++) {
-    for (let x = 1; x < cols - 1; x++) {
 
-      if (grid[y][x] === PATH) {
-
-        let nearBuilding = false;
-
-        let directions = [
-          [1,0], [-1,0],
-          [0,1], [0,-1]
-        ];
-
-        for (let d of directions) {
-          let nx = x + d[0];
-          let ny = y + d[1];
-
-          if (grid[ny][nx] === BUILDING) {
-            nearBuilding = true;
-          }
-        }
-
-        if (nearBuilding && random(100) < 2) {
-          grid[y][x] = PLANTS;
-        }
-
-        displayPlants();
-      }
-    }
-  }
-}
-
-function displayPlants(){
-  if (grid[y][x] === PLANTS) {
-    fill("green");
-    rect(x *CELL_SIZE, y *CELL_SIZE, CELL_SIZE, CELL_SIZE);
-    // image(overgrownPathImg,
-    //       x * CELL_SIZE,
-    //       y * CELL_SIZE,
-    //       CELL_SIZE,
-    //       CELL_SIZE);
-  }
-}
