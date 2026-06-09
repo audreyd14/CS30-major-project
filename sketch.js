@@ -8,36 +8,37 @@
 
 
 
-const CELL_SIZE = 20;
-const PATH = 0;
-const BUILDING = 1;
-const PLANTS = 2;
-let grid;
-let rows;
-let cols;
-let thePlayer;
-let exit;
-let start;
-let startimg;
-let endimg;
-let pathimg;
-let buildingimg;
-let zombieimg;
-let plantsimg;
-let zombies = [];
-let plants = [];
-let paused = false;
-let pauseStart = 0;
-let totalPausedTime = 0;
-let spawnRate = 360; // frames
-let screenMode = "start";
-let timerActive = false;
-let timeStart =  0;
-let timePassed;
-let health = 3;
-let zombiesKilled = 0;
+const CELL_SIZE = 20; // size of map cells
+const PATH = 0; // passable
+const BUILDING = 1; // impassable
+const PLANTS = 2; // impassable
+let grid; //game grid for map generation
+let rows; // rows in grid
+let cols; // columns in grid
+let thePlayer; // x and y coords of player
+let exit; // x and y coors of exit(win point)
+let start; // spawn point of player
+let startimg; // start screen image
+let endimg; // end screen image
+let pathimg; // path image
+let buildingimg; // building image
+let zombieimg; // zombie image
+let plantsimg; // plants image
+let zombies = []; // zombies array
+let plants = []; // plants array
+let paused = false; // game is not paused
+let pauseStart = 0; // what time the game is paused
+let totalPausedTime = 0; // how long the game is paused
+let spawnRate = 360; // how often zombies will spawn
+let screenMode = "start"; // start game on the start screen
+let timerActive = false; // timer not on when game starts
+let timeStart =  0; // run time that the timer starts
+let timePassed; // how long the timer has been on since it started
+let health = 3; // player health at start of game
+let zombiesKilled = 0; // amount of zombies player has killed
 
-class Zombie{
+//ALL CLASS FUNCTIONS
+class Zombie{ //ZOMBIE CLASS
   constructor(){
     //find a place to spawn
     let found = false;
@@ -66,11 +67,11 @@ class Zombie{
     });
   }
 
-  display(){
+  display(){ // display zombies
     image(zombieimg, this.x*CELL_SIZE, this.y*CELL_SIZE);
   }
 
-  move(){
+  move(){ // move zombies
     if (!grid || !grid[0]) {
       return;
     }
@@ -90,7 +91,7 @@ class Zombie{
       }
     }
 
-    let path = this.finder.findPath(
+    let path = this.finder.findPath(  //PATHFINDING
       this.x,
       this.y,
       thePlayer.x,
@@ -103,13 +104,13 @@ class Zombie{
       this.x = path[1][0];
       this.y = path[1][1];
     }
-    else{//nowhere to go despawn
+    else{//nowhere to go despawn and make new zombie
       this.attacked();
       zombies.push(new Zombie());
     }
   }
 
-  attacked(){
+  attacked(){ // zombie despawn
     let index = zombies.indexOf(this);
 
     if (index !== -1){
@@ -118,7 +119,7 @@ class Zombie{
   }
 }
 
-class Plant{
+class Plant{ //PLANT CLASS
   constructor(){
     this.x = floor(random(cols));
     this.y = floor(random(rows));
@@ -126,22 +127,24 @@ class Plant{
 
   }
 
-  display(){
+  display(){ // display plants
     fill("green");
-    image(plantsimg, this.x * CELL_SIZE, this.y * CELL_SIZE);
+    image(plantsimg, this.x * CELL_SIZE, this.y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
   }
 }
 
 
-function preload(){
+//ALL IMAGES
+function preload(){ 
   startimg = loadImage("startscreen.png");
   endimg = loadImage("endscreen.png");
   pathimg = loadImage("pathimg1.png");
   buildingimg = loadImage("buildingimg1.png");
   zombieimg = loadImage("zombie.png");
-  plantsimg = loadImage("plant.png");
+  plantsimg = loadImage("plant.jpg");
   font = loadFont("pcsenior.ttf");
 }
+
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -149,12 +152,15 @@ function setup() {
   textFont(font);
 }
 
+
 function draw() {
   screens();
 }
 
+
+// ALL OF SCREEN STUFF
 function screens(){
-  if(screenMode=== "start"){
+  if(screenMode=== "start"){ //START GAME
     background(startimg);
     fill("white");
     textAlign(CENTER);
@@ -164,7 +170,7 @@ function screens(){
     displayInstructions();
   }
   
-  if(screenMode === "play"){
+  if(screenMode === "play"){// PLAY GAME
     timerStart();
     background(220);
     displayGrid();
@@ -176,27 +182,38 @@ function screens(){
     rectMode(CORNER);
     fill("yellow");
     rect(exit.x * CELL_SIZE, exit.y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+
     if (!paused){
       if(frameCount % 30 === 0 ){
         for(let z of zombies){
           z.move();
         }
       }
-    }
-    if (paused){
 
-    }
+      if(frameCount % spawnRate === 0){
+        zombies.push(new Zombie());
+      }
+  
+      if(frameCount % 600 === 0 && spawnRate > 30){
+        spawnRate -= 20;
+      }
 
-    if(frameCount % spawnRate === 0){
-      zombies.push(new Zombie());
-    }
-
-    if(frameCount % 600 === 0 && spawnRate > 30){
-      spawnRate -= 20;
+      if (frameCount % 300 === 0 && timePassed > 10){
+        plants.push(new Plant());
+      }
+      
+      if(frameCount % 100 === 0 && timePassed > 20){
+        plants.push(new Plant());
+      }
     }
 
     for (let z of zombies) {
       z.display();
+    }
+
+    for(let p of plants){
+      grid[p.y][p.x] = BUILDING;
+      p.display();
     }
 
     for (let z of zombies){
@@ -204,22 +221,10 @@ function screens(){
         health -= 1;
         z.attacked();
         if(health <= 0){
-          screenMode = "endLose"; // restart game
+          screenMode = "endLose"; 
           return;
         }
       }
-    }
-
-    if (frameCount % 300 === 0 && timePassed > 10){
-      plants.push(new Plant());
-      if(frameCount % 100 === 0 && timePassed > 20){
-        plants.push(new Plant());
-      }
-    }
-
-    for(let p of plants){
-      grid[p.y][p.x] = BUILDING;
-      p.display();
     }
 
     if(thePlayer.x === exit.x && thePlayer.y === exit.y){
@@ -230,12 +235,12 @@ function screens(){
     console.log(thePlayer.x, thePlayer.y);
   }
 
-  if(screenMode === "endLose"){
+  if(screenMode === "endLose"){ //LOSE GAME
     timerActive = false;
-    background(100);
+    background(endimg);
     textAlign(CENTER);
     textSize(80);
-    fill("red");
+    fill("yellow");
     text(`GAME OVER
 You Lose`, width/2, height/2 - 100);
     textSize(30);
@@ -244,9 +249,9 @@ You killed ${zombiesKilled} zombies`, width/2, height/2 + 100);
     buttons("restart");
   }
 
-  if(screenMode === "endWin"){
+  if(screenMode === "endWin"){ //WIN GAME
     timerActive = false;
-    background(100);
+    background(endimg);
     textAlign(CENTER);
     textSize(80);
     fill("green");
@@ -254,12 +259,181 @@ You killed ${zombiesKilled} zombies`, width/2, height/2 + 100);
 You Win`, width/2, height/2 - 100);
     textSize(30);
     text(`You won in ${timePassed} seconds
-You killed ${zombiesKilled} zombies`, width/2, height/2 + 100);
-    buttons("restart");
+      You killed ${zombiesKilled} zombies`, width/2, height/2 + 100);
+      buttons("restart");
   }
 }
 
-function buttons(button){
+
+// ALL OF GRID GENERATOR FUNCTIONS
+function generateRandomGrid(cols, rows){ // GENERATE ORIGINAL GRID WITH PATHS AND BUILDINGS
+  let newGrid = [];
+
+  for(let y = 0; y < rows; y ++){
+    newGrid.push([]);
+    for(let x = 0; x < cols; x++){
+      if(random(100) < 25 ){
+        newGrid[y].push(PATH);
+      }
+      
+      else {
+        newGrid[y].push(BUILDING);
+      }
+    }
+  }
+  // top and bottom walls
+  for (let x = 1; x < cols-1; x++){
+    newGrid[0][x] = BUILDING;
+    newGrid[rows-1][x] = BUILDING;
+  }
+
+  // left and right walls
+  for (let y = 1; y < rows-1; y++){
+    newGrid[y][0] = BUILDING;
+    newGrid[y][cols-1] = BUILDING;
+  }
+
+  // reopen start and exit
+  newGrid[1][1] = PATH;
+  newGrid[rows-2][cols-2] = PATH;
+  return newGrid;
+}
+
+function displayGrid(){ // MAP GRID DISPLAY
+  for (let y = 0; y < rows; y++){
+    for (let x = 0; x < cols; x++){
+      rectMode(CORNER);
+      if (grid[y][x] === BUILDING){
+        image(buildingimg, x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+      }
+      if (grid[y][x] === PATH){
+        image(pathimg, x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+
+        // fill(180);
+        // rect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+      }
+    }
+  }
+  drawPlayer(thePlayer.x, thePlayer.y);
+}
+
+//if path generation is currently in the window
+function inBounds(x, y){
+  return x >= 0 && x < cols && y >= 0 && y < rows;
+}
+
+function pathFromPlayer(steps){ // RANDOMLY GROW PATH
+  for (let i = 0; i < steps; i++){
+    let x = Math.floor(random(cols));
+    let y = Math.floor(random(rows));
+
+    // only grow from existing paths
+    if (grid[y][x] === PATH){
+      let directions = [[1,0],[-1,0],[0,1],[0,-1]];
+      let d = random(directions);
+
+      let newx = x + d[0];
+      let newy = y + d[1];
+
+      if (inBounds(newx, newy)){
+        grid[newy][newx] = PATH;
+      }
+    }
+  }
+  grid[exit.y][exit.x] = PATH;
+  grid[start.y][start.x] = PATH;
+}
+
+function toggleGrid(){ // EXPAND EXISTING PATHS
+  let pathGrid = [];
+
+  for(let y = 0; y< rows; y++){
+    pathGrid[y] = [];
+    for(let x = 0; x< cols; x++){
+      pathGrid[y][x] = grid[y][x];
+    }
+  }
+
+  for(let y = 0; y<rows; y++){
+    for(let x = 0; x< cols; x++){
+      if (grid[y][x] === PATH){
+        let directions = [
+          [1, 0],
+          [-1, 0],
+          [0, 1],
+          [0, -1]
+        ];
+
+        for (let dir of directions){
+          let newx = x + dir[0];
+          let newy = y + dir[1];
+      
+          if (inBounds(newx, newy) && random(100) < 22){
+            pathGrid[newy][newx] = PATH;
+          }
+        }
+      }
+    }
+  }
+  grid = pathGrid;
+}
+
+function pathToExit(){ // GUARANTEED ROUTE FROM START TO EXIT
+  let x = 1;
+  let y = 1;
+
+  while(x !== exit.x || y !== exit.y){
+    grid[y][x] = PATH;
+
+    if (random() < 0.5 && x < exit.x){
+      x++;
+    } 
+    else if (y < exit.y){
+      y++;
+    }
+  }
+  grid[y][x] = PATH;
+  grid[exit.y][exit.x] = PATH;
+  grid[start.y][start.x] = PATH;
+}
+
+function addLoops(){ //EXPAND PATHS EVEN MORE
+  let chance = 15;
+  for (let y = 1; y < rows-1; y++){
+    for (let x = 1; x < cols-1; x++){
+
+      if (grid[y][x] === BUILDING){
+
+        let pathsAround = 0;
+
+        if (inBounds(x, y+1) && grid[y+1][x] === PATH){
+          pathsAround++;
+        }
+
+        if (inBounds(x, y-1) && grid[y-1][x] === PATH){
+          pathsAround++;
+        }
+
+        if (inBounds(x+1, y) && grid[y][x+1] === PATH){
+          pathsAround++;
+        }
+
+        if (inBounds(x-1, y) && grid[y][x-1] === PATH){
+          pathsAround++;
+        }
+
+        // if a building is between paths, sometimes remove it
+        if (pathsAround >= 2 && random(100) < chance){
+          grid[y][x] = PATH;
+        }
+      }
+    }
+  }
+}
+
+
+//ALL BUTTONS AND OTHER ITEMS TO DISPLAY
+function buttons(button){ //START AND RESET BUTTONS
   if(button === "start"){
     let startX = width/2;
     let startY = height/2 + 100;
@@ -295,7 +469,7 @@ function buttons(button){
   }
 }
 
-function displayInstructions(){
+function displayInstructions(){ // INSTRUCTIONS BUTTON
   let instrX = 50;
   let instrY = 50;
   textAlign(LEFT);
@@ -329,7 +503,7 @@ function displayInstructions(){
   }
 }
 
-function timerStart(){
+function timerStart(){ // TIMER MATH
   if (!timerActive) {
     timeStart = millis(); // Start the timer right now
     timerActive = true;
@@ -339,7 +513,7 @@ function timerStart(){
   }
 }
 
-function displayTimer(){
+function displayTimer(){ // TIMER DISPLAY
   rectMode(CENTER);
   let timerX = width - 100;
   let timerY = 30;
@@ -347,10 +521,11 @@ function displayTimer(){
   rect(timerX, timerY, 50, 30);
   fill(187, 198, 242);
   textSize(CELL_SIZE);
-  text(`${timePassed}`, timerX, timerY+ CELL_SIZE/2);
+  textAlign(CORNER);
+  text(`${timePassed}`, timerX - CELL_SIZE/2, timerY + CELL_SIZE/2);
 }
 
-function healthBar(){
+function healthBar(){ // HEALTH BAR
   let healthX = width - 200;
   let healthY = 30;
   for(let i = 0; i < 3; i++){
@@ -364,7 +539,7 @@ function healthBar(){
   }
 }
 
-function displayKills(){
+function displayKills(){ //KILLS DISPLAY
   rectMode(CENTER);
   let killsX = width - 100;
   let killsY = 80;
@@ -372,178 +547,15 @@ function displayKills(){
   rect(killsX, killsY, 50, 30);
   fill(221, 235, 226);
   textSize(CELL_SIZE);
-  text(`${zombiesKilled}`, killsX, killsY + 10);
+  text(`${zombiesKilled}`, killsX - CELL_SIZE/2, killsY + CELL_SIZE/2);
 }
 
 
-function displayGrid(){
-  for (let y = 0; y < rows; y++){
-    for (let x = 0; x < cols; x++){
-      rectMode(CORNER);
-      if (grid[y][x] === BUILDING){
-        image(buildingimg, x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
-      }
-      if (grid[y][x] === PATH){
-        image(pathimg, x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
-
-        // fill(180);
-        // rect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
-      }
-    }
-  }
-  drawPlayer(thePlayer.x, thePlayer.y);
-}
-
-//if path generation is currently in the window
-function inBounds(x, y){
-  return x >= 0 && x < cols && y >= 0 && y < rows;
-}
-
-function toggleGrid(){
-  let pathGrid = [];
-
-  for(let y = 0; y< rows; y++){
-    pathGrid[y] = [];
-    for(let x = 0; x< cols; x++){
-      pathGrid[y][x] = grid[y][x];
-    }
-  }
-
-  for(let y = 0; y<rows; y++){
-    for(let x = 0; x< cols; x++){
-      if (grid[y][x] === PATH){
-        let directions = [
-          [1, 0],
-          [-1, 0],
-          [0, 1],
-          [0, -1]
-        ];
-
-        for (let dir of directions){
-          let newx = x + dir[0];
-          let newy = y + dir[1];
-      
-          if (inBounds(newx, newy) && random(100) < 22){
-            pathGrid[newy][newx] = PATH;
-          }
-        }
-      }
-    }
-  }
-  grid = pathGrid;
-}
-
-function pathFromPlayer(steps){
-  for (let i = 0; i < steps; i++){
-    let x = Math.floor(random(cols));
-    let y = Math.floor(random(rows));
-
-    // only grow from existing paths
-    if (grid[y][x] === PATH){
-      let directions = [[1,0],[-1,0],[0,1],[0,-1]];
-      let d = random(directions);
-
-      let newx = x + d[0];
-      let newy = y + d[1];
-
-      if (inBounds(newx, newy)){
-        grid[newy][newx] = PATH;
-      }
-    }
-  }
-  grid[exit.y][exit.x] = PATH;
-  grid[start.y][start.x] = PATH;
-}
-
-function pathToExit(){
-  let x = 1;
-  let y = 1;
-
-  while(x !== exit.x || y !== exit.y){
-    grid[y][x] = PATH;
-
-    if (random() < 0.5 && x < exit.x){
-      x++;
-    } 
-    else if (y < exit.y){
-      y++;
-    }
-  }
-  grid[y][x] = PATH;
-  grid[exit.y][exit.x] = PATH;
-  grid[start.y][start.x] = PATH;
-}
-
-function addLoops(){
-  let chance = 15;
-  for (let y = 1; y < rows-1; y++){
-    for (let x = 1; x < cols-1; x++){
-
-      if (grid[y][x] === BUILDING){
-
-        let pathsAround = 0;
-
-        if (inBounds(x, y+1) && grid[y+1][x] === PATH){
-          pathsAround++;
-        }
-
-        if (inBounds(x, y-1) && grid[y-1][x] === PATH){
-          pathsAround++;
-        }
-
-        if (inBounds(x+1, y) && grid[y][x+1] === PATH){
-          pathsAround++;
-        }
-
-        if (inBounds(x-1, y) && grid[y][x-1] === PATH){
-          pathsAround++;
-        }
-
-        // if a building is between paths, sometimes remove it
-        if (pathsAround >= 2 && random(100) < chance){
-          grid[y][x] = PATH;
-        }
-      }
-    }
-  }
-}
-
-function generateRandomGrid(cols, rows){
-  let newGrid = [];
-
-  for(let y = 0; y < rows; y ++){
-    newGrid.push([]);
-    for(let x = 0; x < cols; x++){
-      if(random(100) < 25 ){
-        newGrid[y].push(PATH);
-      }
-      
-      else {
-        newGrid[y].push(BUILDING);
-      }
-    }
-  }
-  // top and bottom walls
-  for (let x = 1; x < cols-1; x++){
-    newGrid[0][x] = BUILDING;
-    newGrid[rows-1][x] = BUILDING;
-  }
-
-  // left and right walls
-  for (let y = 1; y < rows-1; y++){
-    newGrid[y][0] = BUILDING;
-    newGrid[y][cols-1] = BUILDING;
-  }
-
-  // reopen start and exit
-  newGrid[1][1] = PATH;
-  newGrid[rows-2][cols-2] = PATH;
-  return newGrid;
-}
-
-
-function keyPressed(){
+//ALL KEY FUNCTIONS
+function keyPressed(){ 
   console.log("key pressed");
+
+  //toggle pause
   if(key === "p"){
 
     paused = !paused;
@@ -596,7 +608,8 @@ function keyPressed(){
   }
 }
 
-//draw the player as it moves
+
+//ALL PLAYER FUNCTIONS
 function drawPlayer(x,y){
   fill("red");
   rect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
@@ -625,7 +638,28 @@ function movePlayer(x, y){
   }
 }
 
-//if i need to test
+//kill zombie
+function mousePressed(){
+  for(let i = zombies.length - 1; i >= 0; i--){
+
+    let z = zombies[i];
+    let zx = z.x * CELL_SIZE;
+    let zy = z.y * CELL_SIZE;
+    let px = thePlayer.x * CELL_SIZE;
+    let py = thePlayer.y * CELL_SIZE;
+    if(dist(zx, zy, px, py) < CELL_SIZE*2 &&
+      dist(mouseX, mouseY, zx, zy ) < CELL_SIZE*2 && dist(mouseX, mouseY, px, py) < CELL_SIZE*2){
+
+      z.attacked();
+      zombiesKilled ++; 
+      console.log("Kills:", zombiesKilled);
+      break;
+    }
+  }
+}
+
+
+//TESTING
 function generateEmptyGrid(cols, rows){
   let newGrid = [];
 
@@ -638,7 +672,8 @@ function generateEmptyGrid(cols, rows){
   return newGrid;
 }
 
-//use this to start and restart the whole game
+
+//RESTART ALL GAME FUNCTIONS
 function restart(){
   zombies = [];
   plants = [];
@@ -680,24 +715,5 @@ function restart(){
   grid[start.y][start.x] = PATH;
 }
 
-//kill zombie
-function mousePressed(){
-  for(let i = zombies.length - 1; i >= 0; i--){
-
-    let z = zombies[i];
-    let zx = z.x * CELL_SIZE;
-    let zy = z.y * CELL_SIZE;
-    let px = thePlayer.x * CELL_SIZE;
-    let py = thePlayer.y * CELL_SIZE;
-    if(dist(zx, zy, px, py) < CELL_SIZE*2 &&
-      dist(mouseX, mouseY, zx, zy ) < CELL_SIZE*2 && dist(mouseX, mouseY, px, py) < CELL_SIZE*2){
-
-      z.attacked();
-      zombiesKilled ++; 
-      console.log("Kills:", zombiesKilled);
-      break;
-    }
-  }
-}
 
 
