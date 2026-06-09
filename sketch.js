@@ -260,7 +260,7 @@ You Win`, width/2, height/2 - 100);
     textSize(30);
     text(`You won in ${timePassed} seconds
       You killed ${zombiesKilled} zombies`, width/2, height/2 + 100);
-      buttons("restart");
+    buttons("restart");
   }
 }
 
