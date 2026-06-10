@@ -12,6 +12,10 @@ const CELL_SIZE = 20; // size of map cells
 const PATH = 0; // passable
 const BUILDING = 1; // impassable
 const PLANTS = 2; // impassable
+const BIGTEXT = 80;
+const MEDTEXT = 50;
+const SMALLTEXT = 25;
+
 let grid; //game grid for map generation
 let rows; // rows in grid
 let cols; // columns in grid
@@ -164,7 +168,7 @@ function screens(){
     background(startimg);
     fill("white");
     textAlign(CENTER);
-    textSize(80);
+    textSize(BIGTEXT);
     text(`Zombie Apocolypse`, width/2, height/2);
     buttons("start");
     displayInstructions();
@@ -239,11 +243,11 @@ function screens(){
     timerActive = false;
     background(endimg);
     textAlign(CENTER);
-    textSize(80);
+    textSize(BIGTEXT);
     fill("yellow");
     text(`GAME OVER
 You Lose`, width/2, height/2 - 100);
-    textSize(30);
+    textSize(SMALLTEXT);
     text(`You lost in ${timePassed} seconds
 You killed ${zombiesKilled} zombies`, width/2, height/2 + 100);
     buttons("restart");
@@ -253,11 +257,11 @@ You killed ${zombiesKilled} zombies`, width/2, height/2 + 100);
     timerActive = false;
     background(endimg);
     textAlign(CENTER);
-    textSize(80);
+    textSize(BIGTEXT);
     fill("green");
     text(`GAME OVER
 You Win`, width/2, height/2 - 100);
-    textSize(30);
+    textSize(SMALLTEXT);
     text(`You won in ${timePassed} seconds
       You killed ${zombiesKilled} zombies`, width/2, height/2 + 100);
     buttons("restart");
@@ -265,7 +269,7 @@ You Win`, width/2, height/2 - 100);
 }
 
 
-// ALL OF GRID GENERATOR FUNCTIONS
+// ---------- ALL OF GRID GENERATOR FUNCTIONS----------
 function generateRandomGrid(cols, rows){ // GENERATE ORIGINAL GRID WITH PATHS AND BUILDINGS
   let newGrid = [];
 
@@ -442,7 +446,7 @@ function buttons(button){ //START AND RESET BUTTONS
     rect(startX, startY, 200, 100);
     textAlign(CENTER);
     fill("white");
-    textSize(30);
+    textSize(SMALLTEXT);
     text('start', startX, startY);
     if(mouseX<= startX + 50 && mouseX >= startX - 50 && mouseY <= startY + 25 && mouseY >= startY -25){
       restart();
@@ -454,14 +458,21 @@ function buttons(button){ //START AND RESET BUTTONS
   if(button === "restart"){
     let restartX = width/2;
     let restartY = height/2 + 200;
+    let restartW = 50;
+    let restartH = 25;
+    let restartrecW = 200;
+    let restartrecH = 100;
     rectMode(CENTER);
     fill("red");
-    rect(restartX, restartY, 200, 100);
+    rect(restartX, restartY, restartrecW, restartrecH);
     textAlign(CENTER);
     fill("white");
-    textSize(25);
+    textSize(SMALLTEXT);
     text('restart', restartX, restartY);
-    if(mouseX<= restartX + 50 && mouseX >= restartX - 50 && mouseY <= restartY + 25 && mouseY >= restartY -25){
+    if(mouseX<= restartX + restartW &&
+      mouseX >= restartX - restartW &&
+      mouseY <= restartY + restartH &&
+      mouseY >= restartY - restartH){
       restart();
       screenMode = "play";
       return;
@@ -472,14 +483,17 @@ function buttons(button){ //START AND RESET BUTTONS
 function displayInstructions(){ // INSTRUCTIONS BUTTON
   let instrX = 50;
   let instrY = 50;
+  let instrText = 10;
+  let instrrectW = 500;
+  let instrrecH = 250;
   textAlign(LEFT);
-  textSize(30);
+  textSize(SMALLTEXT);
   text("Instructions", instrX, instrY);
   if(mouseX<= instrX + 400 && mouseX >= instrX && mouseY <= instrY + 50 && mouseY >= instrY){
     rectMode(CORNER);
     fill("black");
-    rect(instrX + 10, instrY + 10, 500, 250);
-    textSize(10);
+    rect(instrX + instrText, instrY + instrText, instrrectW, instrrecH);
+    textSize(instrText);
     fill("green");
     text(`-WASD to move Player(red square)
 
@@ -499,7 +513,7 @@ function displayInstructions(){ // INSTRUCTIONS BUTTON
 
 -green rectangle is your zombie kill count
 
--press 1 to reset game in an emergency`, instrX + 10, instrY + 20);
+-press 1 to reset game in an emergency`, instrX + instrText, instrY + instrText * 2);
   }
 }
 
@@ -520,7 +534,7 @@ function displayTimer(){ // TIMER DISPLAY
   fill(51, 60, 97);
   rect(timerX, timerY, 50, 30);
   fill(187, 198, 242);
-  textSize(CELL_SIZE);
+  textSize(SMALLTEXT);
   textAlign(CORNER);
   text(`${timePassed}`, timerX - CELL_SIZE/2, timerY + CELL_SIZE/2);
 }
@@ -546,7 +560,7 @@ function displayKills(){ //KILLS DISPLAY
   fill(6, 79, 34);
   rect(killsX, killsY, 50, 30);
   fill(221, 235, 226);
-  textSize(CELL_SIZE);
+  textSize(SMALLTEXT);
   text(`${zombiesKilled}`, killsX - CELL_SIZE/2, killsY + CELL_SIZE/2);
 }
 
