@@ -1,13 +1,14 @@
 // Zombie Apocalypse
-// Audrey
-// Date
+// Audrey DesChamp
 //
 // Extra for Experts:
-// - describe what you did to take this project "above and beyond"
-//TO DO:
+// - pathfinding.js
+// - map generation
+// - OOP stuff for attacking zombies and kill display
+// - timer functions
 
 
-
+//  ---------- CONSTANTS  ---------- 
 const CELL_SIZE = 20; // size of map cells
 const PATH = 0; // passable
 const BUILDING = 1; // impassable
@@ -16,6 +17,7 @@ const BIGTEXT = 80;
 const MEDTEXT = 50;
 const SMALLTEXT = 25;
 
+//  ---------- VARIABLES  ---------- 
 let grid; //game grid for map generation
 let rows; // rows in grid
 let cols; // columns in grid
@@ -41,7 +43,7 @@ let timePassed; // how long the timer has been on since it started
 let health = 3; // player health at start of game
 let zombiesKilled = 0; // amount of zombies player has killed
 
-//ALL CLASS FUNCTIONS
+//  ---------- ALL CLASS FUNCTIONS -----------
 class Zombie{ //ZOMBIE CLASS
   constructor(){
     //find a place to spawn
@@ -138,7 +140,7 @@ class Plant{ //PLANT CLASS
 }
 
 
-//ALL IMAGES
+// ---------- ALL IMAGES ------------
 function preload(){ 
   startimg = loadImage("startscreen.png");
   endimg = loadImage("endscreen.png");
@@ -162,7 +164,7 @@ function draw() {
 }
 
 
-// ALL OF SCREEN STUFF
+// ---------- ALL OF SCREEN STUFF ---------- 
 function screens(){
   if(screenMode=== "start"){ //START GAME
     background(startimg);
@@ -187,7 +189,7 @@ function screens(){
     fill("yellow");
     rect(exit.x * CELL_SIZE, exit.y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
 
-    if (!paused){
+    if (!paused){ // if unpaused
       if(frameCount % 30 === 0 ){
         for(let z of zombies){
           z.move();
@@ -321,8 +323,7 @@ function displayGrid(){ // MAP GRID DISPLAY
   drawPlayer(thePlayer.x, thePlayer.y);
 }
 
-//if path generation is currently in the window
-function inBounds(x, y){
+function inBounds(x, y){ //PATH GENERATION CURRENTLY IN WINDOW
   return x >= 0 && x < cols && y >= 0 && y < rows;
 }
 
@@ -436,7 +437,7 @@ function addLoops(){ //EXPAND PATHS EVEN MORE
 }
 
 
-//ALL BUTTONS AND OTHER ITEMS TO DISPLAY
+//  ---------- ALL BUTTONS AND OTHER ITEMS TO DISPLAY  ---------- 
 function buttons(button){ //START AND RESET BUTTONS
   if(button === "start"){
     let startX = width/2;
@@ -565,7 +566,7 @@ function displayKills(){ //KILLS DISPLAY
 }
 
 
-//ALL KEY FUNCTIONS
+//  ----------  ALL KEY FUNCTIONS  ---------- 
 function keyPressed(){ 
   console.log("key pressed");
 
@@ -623,7 +624,7 @@ function keyPressed(){
 }
 
 
-//ALL PLAYER FUNCTIONS
+//  ---------- ALL PLAYER FUNCTIONS  ---------- 
 function drawPlayer(x,y){
   fill("red");
   rect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
@@ -673,7 +674,7 @@ function mousePressed(){
 }
 
 
-//TESTING
+//  ---------- TESTING  ---------- 
 function generateEmptyGrid(cols, rows){
   let newGrid = [];
 
@@ -687,7 +688,7 @@ function generateEmptyGrid(cols, rows){
 }
 
 
-//RESTART ALL GAME FUNCTIONS
+//  ---------- RESTART ALL GAME FUNCTIONS  ---------- 
 function restart(){
   zombies = [];
   plants = [];
